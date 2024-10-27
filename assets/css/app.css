@@ -11,6 +11,8 @@
 	--black: #000;
 
 	--nav-size: 70px;
+	--nav-logo-height-size: 50px;
+	--nav-logo-width-size: 120px;
 	--sudoku-cell-size: 50px;
 
 	--border-radius: 10px;
@@ -95,6 +97,13 @@ nav {
 	font-size: var(--font-size-lg);
 	color: var(--blue);
 	font-weight: var(--font-weight-700);
+}
+
+.nav-img-logo {
+	height: var(--nav-logo-height-size);
+	width: var(--nav-logo-width-size);
+	float: left;
+	display: inline-block;
 }
 
 .dark-mode-toggle {

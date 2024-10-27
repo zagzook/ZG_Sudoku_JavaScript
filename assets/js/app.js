@@ -1,7 +1,6 @@
 const startScreen = document.querySelector('#start-screen')
 const gameScreen = document.querySelector('#game-screen')
 const pauseScreen = document.querySelector('#pause-screen')
-
 const darkModeToggle = document.querySelector('#dark-mode-toggle')
 const metaNameThemeColor = document.querySelector('meta[name="theme-color"]')
 const btnContinue = document.querySelector('#btn-continue')
@@ -172,6 +171,10 @@ function createNumberBoard() {
     numberKeys.appendChild(deleteKey)
 
 
+}
+
+function initSudoku() {
+    // generate sudoku puzzle
 }
 
 //--------------------
