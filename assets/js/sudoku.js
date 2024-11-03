@@ -1,3 +1,14 @@
+import {CONSTANT} from './constant.js'
+import {nineDigits, boardIndex, solutionIndex} from './boards/nineDigit.js'
+import {
+    easyBoardTemplate,
+    easySolution,
+    normalBoardTemplate,
+    normalSolution,
+    hardBoardTemplate,
+    hardSolution
+} from './boards/nineRegularBoards.js'
+
 function newGrid(size) {
     let arr = new Array(size)
 
@@ -127,7 +138,7 @@ const sudokuCreate = (grid) => {
 }
 //=============================
 
-const sudokuCheck = (grid) => {
+export const sudokuCheck = (grid) => {
     let unassigned_pos = {
         row: -1,
         col: -1
@@ -174,14 +185,38 @@ const removeCells = (grid, level) => {
 //=============================
 
 // generate sudoku base on level
-const sudokuGen = (level) => {
-    const boardNumber = Math.floor(Math.random() * 5000)
-    const puzzleBoard = easyBoard[boardNumber]
-    const puzzleSolution = easySolution[boardNumber]
-    console.log(puzzleBoard)
-    console.log(puzzleSolution)
+export const sudokuGen = (level) => {
+
+    let puzzleBoard = undefined
+    let puzzleSolution = undefined
+
+    switch (level) {
+        case 4:
+
+            puzzleBoard = hardBoardTemplate[boardIndex]
+            puzzleSolution = hardSolution[solutionIndex]
+            break
+        case 3:
+
+            puzzleBoard = normalBoardTemplate[boardIndex]
+            puzzleSolution = normalSolution[solutionIndex]
+            break
+        default:
+
+            puzzleBoard = easyBoardTemplate[boardIndex]
+            puzzleSolution = easySolution[solutionIndex]
+    }
+
+    shuffleNumbers()
+
+    let puzzleSolutionArray = replaceSolution(puzzleSolution.split('').map(Number))
+    puzzleSolution = puzzleSolutionArray.join('')
+    let puzzleBoardArray = replaceBoard(puzzleBoard.split('').map(Number), puzzleSolution.split('').map(Number))
+    puzzleBoard = puzzleBoardArray.join('')
     let sudoku = breakDown(puzzleSolution)
     let check = sudokuCreate(sudoku)
+    console.log('puzzleBoard', puzzleBoard)
+    console.log('puzzleSolution', puzzleSolution)
     if (check) {
         let question = breakDown(puzzleBoard)
         return {
@@ -237,20 +272,49 @@ const breakDown = (board, type = 'number') => {
 const getBoardType = (board, type) => {
 }
 
-function shuffleString(str) {
-    // Convert the string to an array of characters
-    const arr = str.split('')
+// function shuffleString(str) {
+//     // Convert the string to an array of characters
+//     const arr = str.split('')
+//
+//     // Implement the Fisher-Yates shuffle algorithm
+//     for (let i = arr.length - 1; i > 0; i--) {
+//         const j = Math.floor(Math.random() * (i + 1));
+//         // Swap the characters at indices i and j
+//         [arr[i], arr[j]] = [arr[j], arr[i]]
+//     }
+//
+//     // Join the shuffled array back into a string
+//     return arr.join('')
+// }
 
-    // Implement the Fisher-Yates shuffle algorithm
-    for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        // Swap the characters at indices i and j
-        [arr[i], arr[j]] = [arr[j], arr[i]]
+function shuffleNumbers() {
+    return shuffleArray(nineDigits)
+}
+
+
+function replaceSolution(solution) {
+    const newShuffledArray = shuffleNumbers()
+    for (let i = 0; i < CONSTANT.GRID_SIZE * CONSTANT.GRID_SIZE; i++) {
+        //console.log('Before: ', solution[i])
+        solution[i] = newShuffledArray[solution[i] - 1]
+        //console.log('After: ', solution[i])
     }
 
-    // Join the shuffled array back into a string
-    return arr.join('')
+    return solution
 }
+
+function replaceBoard(board, solution) {
+    for (let i = 0; i < CONSTANT.GRID_SIZE * CONSTANT.GRID_SIZE; i++) {
+
+        if (board[i] === 1) {
+            board[i] = solution[i]
+        } else {
+            board[i] = 0
+        }
+    }
+    return board
+}
+
 
 // Example usage:
 function testArray() {

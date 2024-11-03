@@ -1,4 +1,4 @@
-const CONSTANT = {
+export const CONSTANT = {
     UNASSIGNED: 0,
     GRID_SIZE: 9,
     BOX_SIZE: 3,

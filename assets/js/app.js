@@ -1,7 +1,13 @@
+import {CONSTANT} from './constant.js'
+import {sudokuGen, sudokuCheck} from './sudoku.js'
+import {nineDigits} from './boards/nineDigit.js'
+
+
 const startScreen = document.querySelector('#start-screen')
 const gameScreen = document.querySelector('#game-screen')
 const pauseScreen = document.querySelector('#pause-screen')
 const resultScreen = document.querySelector('#result-screen')
+const errorScreen = document.querySelector('#error-screen')
 const darkModeToggle = document.querySelector('#dark-mode-toggle')
 const metaNameThemeColor = document.querySelector('meta[name="theme-color"]')
 const mainSudokuGrid = document.querySelector('#main-sudoku-grid')
@@ -13,6 +19,8 @@ const btnPause = document.querySelector('#btn-pause')
 const btnResume = document.querySelector('#btn-resume')
 const btnNewGame = document.querySelector('#btn-new-game')
 const btnNewGameResults = document.querySelector('#btn-new-game-2')
+const btnNewGameError = document.querySelector('#btn-new-game-3')
+const btnRestartGameError = document.querySelector('#btn-restart')
 const btnDelete = document.querySelector('#btn-delete')
 const playerName = document.querySelector('#player-name')
 const gameLevel = document.querySelector('#game-level')
@@ -103,6 +111,18 @@ btnNewGameResults.addEventListener('click', () => {
     returnStartScreen()
 })
 
+btnNewGameError.addEventListener('click', () => {
+    clearSudoku()
+    clearKeyboard()
+    removeGameInfo()
+    returnStartScreen()
+})
+
+btnRestartGameError.addEventListener('click', () => {
+
+    restartGame()
+})
+
 btnContinue.addEventListener('click', () => {
     if (nameInput.value.trim().length > 0) {
         loadSudoku()
@@ -131,6 +151,10 @@ btnDelete.addEventListener('click', () => {
 document.addEventListener('click', (e) => {
     if (!mainSudokuGrid.contains(e.target)) {
         clearCells()
+        setTimeout(() => {
+
+            selectedCell = -1
+        }, 1150)
     }
 })
 
@@ -146,7 +170,6 @@ function init() {
 
     const game = getGameInfo()
     btnContinue.style.display = game ? 'grid' : 'none'
-    console.log(nineDigits)
     initGameGrid()
     initCellsEvent()
     initNumberInputEvent()
@@ -165,6 +188,7 @@ function startGame() {
     setPlayerName(nameInput.value.trim())
     gameLevel.innerHTML = CONSTANT.LEVEL_NAME[level_index]
     gameError.innerHTML = `Errors: ${errorCount}/${CONSTANT.ERRORMAXCOUNT[CONSTANT.LEVEL[level_index] - 2]}`
+    console.log('startGame: gameError', gameError)
     seconds = 0
     showTime(seconds)
     timer = setInterval(() => {
@@ -183,7 +207,8 @@ function initSudoku() {
     resetBg()
     // generate sudoku puzzle
     su = sudokuGen(level)
-    suAnswer = [...su.question]
+    //suAnswer = [...su.question]
+    suAnswer = JSON.parse(JSON.stringify(su.question))
     setSudokuToDiv()
     setKeyboardToDiv()
 
@@ -193,7 +218,7 @@ function setSudokuToDiv() {
     for (let i = 0; i < Math.pow(CONSTANT.GRID_SIZE, 2); i++) {
         let row = Math.floor(i / CONSTANT.GRID_SIZE)
         let col = i % CONSTANT.GRID_SIZE
-        const divValue = suAnswer[row][col]
+        const divValue = su.question[row][col]
         const imageHTML = `<img src='${tilePath}${gameType}${divValue}-${themeMode}.png' class="cell-image" alt="New Image">`
 
         cells[i].setAttribute('data-value', divValue)
@@ -236,7 +261,16 @@ function returnStartScreen() {
     gameScreen.classList.remove('active')
     pauseScreen.classList.remove('active')
     resultScreen.classList.remove('active')
+    errorScreen.classList.remove('active')
+    errorCount = 0
     gameTimer.innerHTML = '00:00:00'
+}
+
+function restartGame() {
+    errorScreen.classList.remove('active')
+    gameScreen.classList.add('active')
+    suAnswer = JSON.parse(JSON.stringify(su.question))
+    restartSudoku()
 }
 
 //to create the big border gaps
@@ -298,7 +332,7 @@ function initCellsEvent() {
     cells.forEach((e, index) => {
 
         e.addEventListener('click', () => {
-
+            clearCells()
             if (!e.classList.contains('filled')) {
                 cells.forEach(e => e.classList.remove('selected'))
 
@@ -331,12 +365,18 @@ function checkErr(value) {
             cells[selectedCell].classList.add('err')
 
             gameError.innerHTML = `Errors: ${errorCount}/${CONSTANT.ERRORMAXCOUNT[CONSTANT.LEVEL[level_index] - 2]}`
+            console.log('checkErr: gameError', gameError)
+            if (errorCount >= CONSTANT.ERRORMAXCOUNT[CONSTANT.LEVEL[level_index] - 2]) {
+                showError()
+            }
             setTimeout(() => {
                 cell.classList.remove('cell-err')
+                cell.classList.remove('err')
             }, 1000)
             setTimeout(() => {
-                cell.classList.remove('err')
-            }, 1500)
+
+                selectedCell = -1
+            }, 1150)
         }
     }
 
@@ -393,15 +433,17 @@ function initNumberInputEvent() {
         e.addEventListener('click', () => {
             const imageHTML = `<img src='${tilePath}${gameType}${index + 1}-${themeMode}.png' class="cell-image" alt="New Image">`
 
-            if (!cells[selectedCell].classList.contains('filled')) {
+            if (!cells[selectedCell].classList.contains('filled') || !cells[selectedCell].classList.contains('fill-ans')) {
                 cells[selectedCell].classList.add('fill-ans')
                 cells[selectedCell].innerHTML += imageHTML
                 cells[selectedCell].setAttribute('data-value', index + 1)
                 // add to answer
                 let row = Math.floor(selectedCell / CONSTANT.GRID_SIZE)
                 let col = selectedCell % CONSTANT.GRID_SIZE
-                suAnswer[row][col] = index + 1
+
                 // save game
+                console.log('board', su.question)
+                console.log('answer', suAnswer)
                 saveGameInfo()
                 // -----
                 removeErr()
@@ -411,7 +453,13 @@ function initNumberInputEvent() {
                 if (isErrCell('err') || isInSolution()) {
                     errorCount += 1
                     gameError.innerHTML = `Errors: ${errorCount}/${CONSTANT.ERRORMAXCOUNT[CONSTANT.LEVEL[level_index] - 2]}`
-
+                    console.log('initNumberInputEvent: gameError', gameError)
+                    console.log(errorCount)
+                    console.log(CONSTANT.ERRORMAXCOUNT[CONSTANT.LEVEL[level_index] - 2])
+                    if (errorCount >= CONSTANT.ERRORMAXCOUNT[CONSTANT.LEVEL[level_index] - 2]) {
+                        console.log('errorCount', errorCount)
+                        showError()
+                    }
                     setTimeout(() => {
                         console.log(selectedCell)
                         cells[selectedCell].classList.remove('zoom-in')
@@ -419,11 +467,11 @@ function initNumberInputEvent() {
                         cells[selectedCell].classList.remove('fill-ans')
                         cells[selectedCell].setAttribute('data-value', 0)
                         cells[selectedCell].innerHTML = ''
-                        console.log('before selectedCell', selectedCell)
-                        selectedCell = -1
-                        console.log('after selectedCell', selectedCell)
+
                     }, 1000)
+
                 } else {
+                    suAnswer[row][col] = index + 1
                     cells[selectedCell].classList.remove('zoom-in')
                     // check game win
                     if (isGameWin()) {
@@ -469,6 +517,12 @@ function showResult() {
     resultTime.innerHTML = showTime(seconds)
 }
 
+function showError() {
+    clearInterval(timer)
+    errorScreen.classList.add('active')
+    gameScreen.classList.remove('active')
+}
+
 function loadSudoku() {
     let game = getGameInfo()
 
@@ -488,12 +542,53 @@ function loadSudoku() {
         let row = Math.floor(i / CONSTANT.GRID_SIZE)
         let col = i % CONSTANT.GRID_SIZE
 
-        cells[i].setAttribute('data-value', su_answer[row][col])
+        cells[i].setAttribute('data-value', suAnswer[row][col])
         cells[i].innerHTML = suAnswer[row][col] !== 0 ? suAnswer[row][col] : ''
         if (su.question[row][col] !== 0) {
             cells[i].classList.add('filled')
         }
     }
+}
+
+function restartSudoku() {
+    let game = getGameInfo()
+
+    gameLevel.innerHTML = CONSTANT.LEVEL_NAME[game.level]
+
+    su = game.su
+
+    suAnswer = su.answer
+
+    seconds = game.seconds
+    gameTimer.innerHTML = showTime(seconds)
+
+    level_index = game.level
+
+    // show sudoku to div
+    for (let i = 0; i < Math.pow(CONSTANT.GRID_SIZE, 2); i++) {
+        let row = Math.floor(i / CONSTANT.GRID_SIZE)
+        let col = i % CONSTANT.GRID_SIZE
+
+        cells[i].setAttribute('data-value', suAnswer[row][col])
+        cells[i].classList.remove('fill-ans')
+        cells[i].innerHTML = ''
+        clearInterval(timer)
+        if (su.question[row][col] !== 0) {
+            cells[i].classList.add('filled')
+        }
+
+    }
+    errorCount = 0
+    gameError.innerHTML = `Errors: ${errorCount}/${CONSTANT.ERRORMAXCOUNT[CONSTANT.LEVEL[level_index] - 2]}`
+    seconds = 0
+    showTime(seconds)
+    timer = setInterval(() => {
+        if (!pause) {
+            seconds = seconds + 1
+            gameTimer.innerHTML = showTime(seconds)
+        }
+    }, 1000)
+    setSudokuToDiv()
 }
 
 function clearCells() {
@@ -502,10 +597,7 @@ function clearCells() {
         cells[i].classList.remove('selected')
         cells[i].classList.remove('num-selected')
     }
-    // setTimeout(() => {
-    //     selectedCell = -1
-    // }, 2000)
-    //
+
 
 }
 
@@ -524,11 +616,15 @@ function isInSolution() {
         cells[selectedCell].classList.add('err')
         cells[selectedCell].classList.add('cell-err')
         gameError.innerHTML = `Errors: ${errorCount}/${CONSTANT.ERRORMAXCOUNT[CONSTANT.LEVEL[level_index] - 2]}`
+        console.log('isInSolution: gameError', gameError)
+        if (errorCount >= CONSTANT.ERRORMAXCOUNT[CONSTANT.LEVEL[level_index] - 2]) {
+            showError()
+        }
         setTimeout(() => {
             cells[selectedCell].classList.remove('cell-err')
             cells[selectedCell].classList.remove('err')
         }, 1000)
-        
+
     }
     return isSolution
 }

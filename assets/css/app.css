@@ -371,7 +371,8 @@ nav {
 }
 
 .pause-screen,
-.result-screen {
+.result-screen,
+.error-screen {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -385,12 +386,14 @@ nav {
 }
 
 .pause-screen.active,
-.result-screen.active {
+.result-screen.active,
+.error-screen.active {
 	display: flex;
 }
 
 .pause-screen > * + *,
-.result-screen > * + * {
+.result-screen > * + *,
+.error-screen > * + * {
 	margin-top: 20px;
 }
 
@@ -408,6 +411,20 @@ nav {
 }
 
 .result-screen .info {
+	color: var(--color-txt);
+	font-size: var(--font-size);
+}
+
+.error-screen.active div {
+	animation: zoom-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.error-screen .you-lose {
+	font-size: var(--font-size-xl);
+	color: var(--blue);
+}
+
+.error-screen .info {
 	color: var(--color-txt);
 	font-size: var(--font-size);
 }
