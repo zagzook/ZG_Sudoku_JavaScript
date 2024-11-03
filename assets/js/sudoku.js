@@ -128,8 +128,6 @@ const sudokuCreate = (grid) => {
 //=============================
 
 const sudokuCheck = (grid) => {
-    console.log('sudokuCheck')
-    console.log(grid)
     let unassigned_pos = {
         row: -1,
         col: -1

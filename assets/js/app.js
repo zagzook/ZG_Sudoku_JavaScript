@@ -18,6 +18,7 @@ const playerName = document.querySelector('#player-name')
 const gameLevel = document.querySelector('#game-level')
 const gameTimer = document.querySelector('#game-time')
 const resultTime = document.querySelector('#result-time')
+const gameError = document.querySelector('#game-err')
 const cells = document.querySelectorAll('.main-grid-cell')
 const numberInputs = document.querySelectorAll('.number')
 const tilePath = 'assets/images/tiles/'
@@ -47,6 +48,7 @@ let seconds = 0
 let su = undefined
 let suAnswer = undefined
 let selectedCell = -1
+let errorCount = 0
 //-----------
 const getGameInfo = () => JSON.parse(localStorage.getItem('game'))
 
@@ -143,7 +145,6 @@ function init() {
     metaNameThemeColor.setAttribute('content', darkmode ? '#1a1a2e' : '#fff')
 
     const game = getGameInfo()
-
     btnContinue.style.display = game ? 'grid' : 'none'
     console.log(nineDigits)
     initGameGrid()
@@ -160,12 +161,10 @@ function init() {
 function startGame() {
     startScreen.classList.remove('active')
     gameScreen.classList.add('active')
-
     playerName.innerHTML = nameInput.value.trim()
     setPlayerName(nameInput.value.trim())
-
     gameLevel.innerHTML = CONSTANT.LEVEL_NAME[level_index]
-
+    gameError.innerHTML = `Errors: ${errorCount}/${CONSTANT.ERRORMAXCOUNT[CONSTANT.LEVEL[level_index] - 2]}`
     seconds = 0
     showTime(seconds)
     timer = setInterval(() => {
@@ -256,7 +255,6 @@ function initGameGrid() {
 function hoverBg(index) {
     let row = Math.floor(index / CONSTANT.GRID_SIZE)
     let col = index % CONSTANT.GRID_SIZE
-    console.log('index', index)
     let boxStartRow = row - row % 3
     let boxStartCol = col - col % 3
 
@@ -300,7 +298,7 @@ function initCellsEvent() {
     cells.forEach((e, index) => {
 
         e.addEventListener('click', () => {
-            clearCells()
+
             if (!e.classList.contains('filled')) {
                 cells.forEach(e => e.classList.remove('selected'))
 
@@ -322,6 +320,7 @@ function initCellsEvent() {
             }
         })
     })
+
 }
 
 function checkErr(value) {
@@ -330,6 +329,8 @@ function checkErr(value) {
             cell.classList.add('err')
             cell.classList.add('cell-err')
             cells[selectedCell].classList.add('err')
+
+            gameError.innerHTML = `Errors: ${errorCount}/${CONSTANT.ERRORMAXCOUNT[CONSTANT.LEVEL[level_index] - 2]}`
             setTimeout(() => {
                 cell.classList.remove('cell-err')
             }, 1000)
@@ -405,13 +406,22 @@ function initNumberInputEvent() {
                 // -----
                 removeErr()
                 checkErr(index + 1)
+
                 cells[selectedCell].classList.add('zoom-in')
-                if (isErrCell('err')) {
+                if (isErrCell('err') || isInSolution()) {
+                    errorCount += 1
+                    gameError.innerHTML = `Errors: ${errorCount}/${CONSTANT.ERRORMAXCOUNT[CONSTANT.LEVEL[level_index] - 2]}`
+
                     setTimeout(() => {
+                        console.log(selectedCell)
                         cells[selectedCell].classList.remove('zoom-in')
                         cells[selectedCell].classList.remove('err')
+                        cells[selectedCell].classList.remove('fill-ans')
                         cells[selectedCell].setAttribute('data-value', 0)
                         cells[selectedCell].innerHTML = ''
+                        console.log('before selectedCell', selectedCell)
+                        selectedCell = -1
+                        console.log('after selectedCell', selectedCell)
                     }, 1000)
                 } else {
                     cells[selectedCell].classList.remove('zoom-in')
@@ -427,6 +437,8 @@ function initNumberInputEvent() {
             }
         })
     })
+
+
 }
 
 function saveGameInfo() {
@@ -485,12 +497,40 @@ function loadSudoku() {
 }
 
 function clearCells() {
-    console.log('clearCells')
     for (let i = 0; i < CONSTANT.GRID_SIZE * CONSTANT.GRID_SIZE; i++) {
         cells[i].classList.remove('hover')
         cells[i].classList.remove('selected')
         cells[i].classList.remove('num-selected')
     }
+    // setTimeout(() => {
+    //     selectedCell = -1
+    // }, 2000)
+    //
+
+}
+
+//check to see if the number is correct in the solution
+function isInSolution() {
+    let isSolution = false
+    let row = Math.floor(selectedCell / CONSTANT.GRID_SIZE)
+    let col = selectedCell % CONSTANT.GRID_SIZE
+
+    let selectedCellGrid = parseInt(cells[selectedCell].getAttribute('data-value'))
+    let selectedSolutionCellGrid = parseInt(su.original[row][col])
+    console.log('selectedCellGrid', selectedCellGrid)
+    console.log('selectedSolutionCellGrid', selectedSolutionCellGrid)
+    if (selectedCellGrid !== selectedSolutionCellGrid) {
+        isSolution = true
+        cells[selectedCell].classList.add('err')
+        cells[selectedCell].classList.add('cell-err')
+        gameError.innerHTML = `Errors: ${errorCount}/${CONSTANT.ERRORMAXCOUNT[CONSTANT.LEVEL[level_index] - 2]}`
+        setTimeout(() => {
+            cells[selectedCell].classList.remove('cell-err')
+            cells[selectedCell].classList.remove('err')
+        }, 1000)
+        
+    }
+    return isSolution
 }
 
 //---------------------------
