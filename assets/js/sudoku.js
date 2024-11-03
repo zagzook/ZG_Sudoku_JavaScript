@@ -128,6 +128,8 @@ const sudokuCreate = (grid) => {
 //=============================
 
 const sudokuCheck = (grid) => {
+    console.log('sudokuCheck')
+    console.log(grid)
     let unassigned_pos = {
         row: -1,
         col: -1
@@ -175,15 +177,15 @@ const removeCells = (grid, level) => {
 
 // generate sudoku base on level
 const sudokuGen = (level) => {
-    const boardNumber = 5 //Math.floor(Math.random() * 5000)
-    const puzzleBoard = sudokuPuzzle.find(puzzle => puzzle.id === boardNumber)
-    console.log(boardNumber)
-    console.log(level)
-    console.log('board', puzzleBoard.easy.solution)
-    let sudoku = breakDown(puzzleBoard.easy.solution)
+    const boardNumber = Math.floor(Math.random() * 5000)
+    const puzzleBoard = easyBoard[boardNumber]
+    const puzzleSolution = easySolution[boardNumber]
+    console.log(puzzleBoard)
+    console.log(puzzleSolution)
+    let sudoku = breakDown(puzzleSolution)
     let check = sudokuCreate(sudoku)
     if (check) {
-        let question = breakDown(puzzleBoard.easy.board)
+        let question = breakDown(puzzleBoard)
         return {
             original: sudoku,
             question: question
@@ -217,7 +219,6 @@ const breakDown = (board, type = 'number') => {
         board = resultString
     }
     const newBoard = []
-    console.log('breakDown', board)
     let temprow = []
     for (let i = 0; i < board.length + 1; i++) {
         if ((i + 1) % 9 === 0) {

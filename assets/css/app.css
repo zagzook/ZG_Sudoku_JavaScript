@@ -1,14 +1,17 @@
 :root {
 	--bg-body: #fff;
+	--bg-grid: #000;
 	--color-txt: #252525;
 	--bg-main: #f0f2f5;
 	--filled-color: #000;
 	--filled-bg: #caf0f8;
+	--filled-ans: #008000;
 
 	--white: #fff;
 	--blue: #00aeef;
 	--red: #9f2305;
 	--black: #000;
+	--orange: #ff8210;
 
 	--nav-size: 70px;
 	--nav-logo-height-size: 50px;
@@ -35,9 +38,11 @@
 .dark {
 	--bg-main: #2a2a38;
 	--bg-body: #1a1a2e;
+	--bg-grid: #fff;
 	--color-txt: #6a6a6a;
 	--filled-color: #4f4f63;
-	--filled-bg: #000;
+	--filled-bg: #011e31;
+	--filled-ans: #008000;
 }
 
 * {
@@ -62,7 +67,7 @@ input {
 }
 
 input:hover, input:focus {
-	border-color: var(--blue);
+	border-color: var(--orange);
 }
 
 a {
@@ -111,6 +116,10 @@ nav {
 	color: var(--blue);
 	font-size: var(--font-size-lg);
 	cursor: pointer;
+}
+
+.bxs-cog {
+	display: inline-block;
 }
 
 .bxs-sun {
@@ -235,9 +244,13 @@ nav {
 }
 
 .main-sudoku-grid {
+	background-color: var(--bg-grid);
+	border: 4px solid var(--bg-grid);
+	border-radius: 10px;
 	display: grid;
 	gap: var(--gap);
 	grid-template-columns: repeat(9, auto);
+
 }
 
 .main-grid-cell {
@@ -252,9 +265,8 @@ nav {
 	cursor: pointer;
 }
 
-.cell-image {
-	height: var(--tile-cell-size);
-	width: var(--tile-cell-size);
+.num-selected {
+	background-color: var(--orange) !important;
 }
 
 .main-grid-cell.filled {
@@ -268,15 +280,17 @@ nav {
 }
 
 .main-grid-cell:hover {
-	border: 2px solid var(--blue);
+	border: 3px solid var(--orange);
 }
 
 .main-grid-cell.hover {
-	border: 3px solid var(--blue);
+	border: 3px solid var(--orange);
+	background-color: var(--orange) !important;
 }
 
 .dark .main-grid-cell.hover {
-	border: 1px solid var(--blue);
+	border: 3px solid var(--orange);
+	background-color: var(--orange) !important;
 }
 
 
@@ -337,7 +351,7 @@ nav {
 .number {
 	height: var(--sudoku-cell-size);
 	border-radius: var(--border-radius);
-	background-color: var(--bg-main);
+	background-color: var(--filled-bg);
 	color: var(--color-txt);
 	display: grid;
 	place-items: center;
@@ -457,7 +471,7 @@ nav {
 		height: 50px;
 	}
 
-	.main-grid-cell.hover {
+	.main-grid-cell .hover {
 		border-width: 2px;
 	}
 
@@ -469,6 +483,16 @@ nav {
 		height: 100vh;
 	}
 }
+
+.cell-image {
+	height: var(--tile-cell-size);
+	width: var(--tile-cell-size);
+}
+
+.fill-ans {
+	background-color: var(--filled-ans);
+}
+
 
 
 

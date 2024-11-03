@@ -4,6 +4,7 @@ const pauseScreen = document.querySelector('#pause-screen')
 const resultScreen = document.querySelector('#result-screen')
 const darkModeToggle = document.querySelector('#dark-mode-toggle')
 const metaNameThemeColor = document.querySelector('meta[name="theme-color"]')
+const mainSudokuGrid = document.querySelector('#main-sudoku-grid')
 const nameInput = document.querySelector('#input-name')
 const btnContinue = document.querySelector('#btn-continue')
 const btnPlay = document.querySelector('#btn-play')
@@ -11,17 +12,20 @@ const btnLevel = document.querySelector('#btn-level')
 const btnPause = document.querySelector('#btn-pause')
 const btnResume = document.querySelector('#btn-resume')
 const btnNewGame = document.querySelector('#btn-new-game')
-const mainGrid = document.querySelector('.main-game')
-const mainSudokuGrid = document.querySelector('.main-sudoku-grid')
-const numberKeys = document.querySelector('.numbers')
+const btnNewGameResults = document.querySelector('#btn-new-game-2')
+const btnDelete = document.querySelector('#btn-delete')
 const playerName = document.querySelector('#player-name')
 const gameLevel = document.querySelector('#game-level')
 const gameTimer = document.querySelector('#game-time')
 const resultTime = document.querySelector('#result-time')
+const cells = document.querySelectorAll('.main-grid-cell')
+const numberInputs = document.querySelectorAll('.number')
 const tilePath = 'assets/images/tiles/'
 
 //add dark/light theme toggle
+let themeMode = 'dark'
 darkModeToggle.addEventListener('click', () => {
+
     document.body.classList.toggle('dark')
     const isDarkMode = document.body.classList.contains('dark')
     themeMode = isDarkMode ? 'dark' : 'light'
@@ -29,12 +33,12 @@ darkModeToggle.addEventListener('click', () => {
     // change mobile status bar color
     metaNameThemeColor.setAttribute('content', isDarkMode ? '#1a1a2e' : '#fff')
 })
+
 //------------------------------
 
 //initial value
-let themeMode = 'dark'
-let cells = undefined
-let numberInputs = undefined
+
+let gameType = ''
 let level_index = 0
 let level = CONSTANT.LEVEL[level_index]
 let timer = null
@@ -85,7 +89,47 @@ btnResume.addEventListener('click', () => {
 
 btnNewGame.addEventListener('click', () => {
     clearSudoku()
+    clearKeyboard()
+    removeGameInfo()
     returnStartScreen()
+})
+
+btnNewGameResults.addEventListener('click', () => {
+    clearSudoku()
+    clearKeyboard()
+    removeGameInfo()
+    returnStartScreen()
+})
+
+btnContinue.addEventListener('click', () => {
+    if (nameInput.value.trim().length > 0) {
+        loadSudoku()
+        startGame()
+    } else {
+        nameInput.classList.add('input-err')
+        setTimeout(() => {
+            nameInput.classList.remove('input-err')
+            nameInput.focus()
+        }, 500)
+    }
+})
+
+btnDelete.addEventListener('click', () => {
+    cells[selectedCell].innerHTML = ''
+    cells[selectedCell].setAttribute('data-value', 0)
+
+    let row = Math.floor(selectedCell / CONSTANT.GRID_SIZE)
+    let col = selectedCell % CONSTANT.GRID_SIZE
+
+    suAnswer[row][col] = 0
+
+    removeErr()
+})
+
+document.addEventListener('click', (e) => {
+    if (!mainSudokuGrid.contains(e.target)) {
+        clearCells()
+    }
 })
 
 
@@ -95,15 +139,13 @@ btnNewGame.addEventListener('click', () => {
 function init() {
     const darkmode = JSON.parse(localStorage.getItem('darkmode'))
     document.body.classList.add(darkmode ? 'dark' : 'light')
+    themeMode = darkmode ? 'dark' : 'light'
     metaNameThemeColor.setAttribute('content', darkmode ? '#1a1a2e' : '#fff')
 
     const game = getGameInfo()
 
     btnContinue.style.display = game ? 'grid' : 'none'
-
-    createGridBoard()
-    cells = document.querySelectorAll('.main-grid-cell')
-    createNumberBoard()
+    console.log(nineDigits)
     initGameGrid()
     initCellsEvent()
     initNumberInputEvent()
@@ -134,56 +176,26 @@ function startGame() {
     }, 1000)
 }
 
-function createGridBoard() {
-    for (let i = 0; i < CONSTANT.GRID_SIZE * CONSTANT.GRID_SIZE; i++) {
-        const square = document.createElement('div')
-
-        square.classList.add('main-grid-cell')
-        square.setAttribute('id', i)
-        mainSudokuGrid.appendChild(square)
-    }
-
-
-}
-
-function createNumberBoard() {
-    for (let i = 0; i < CONSTANT.GRID_SIZE; i++) {
-        const numberBoard = document.createElement('div')
-        numberBoard.classList.add('number')
-        numberBoard.setAttribute('id', i + 1)
-        numberBoard.innerHTML = i + 1
-        numberKeys.appendChild(numberBoard)
-    }
-    const deleteKey = document.createElement('div')
-    deleteKey.classList.add('delete')
-    deleteKey.setAttribute('id', 'btn-delete')
-    deleteKey.innerHTML = 'X'
-    numberKeys.appendChild(deleteKey)
-    numberInputs = document.querySelectorAll('.number')
-
-}
-
 function initSudoku() {
     const levelName = CONSTANT.LEVEL_NAME[level_index]
     // clear old sudoku
     clearSudoku()
+    clearKeyboard()
     resetBg()
     // generate sudoku puzzle
     su = sudokuGen(level)
     suAnswer = [...su.question]
-
-    console.log(suAnswer)
     setSudokuToDiv()
+    setKeyboardToDiv()
 
 }
 
 function setSudokuToDiv() {
-    //const cells = document.querySelectorAll('.main-grid-cell')
     for (let i = 0; i < Math.pow(CONSTANT.GRID_SIZE, 2); i++) {
         let row = Math.floor(i / CONSTANT.GRID_SIZE)
         let col = i % CONSTANT.GRID_SIZE
         const divValue = suAnswer[row][col]
-        const imageHTML = `<img src='${tilePath}a${divValue}-${themeMode}.png' class="cell-image" alt="New Image">`
+        const imageHTML = `<img src='${tilePath}${gameType}${divValue}-${themeMode}.png' class="cell-image" alt="New Image">`
 
         cells[i].setAttribute('data-value', divValue)
 
@@ -194,11 +206,26 @@ function setSudokuToDiv() {
     }
 }
 
+function setKeyboardToDiv() {
+    for (let i = 0; i < CONSTANT.GRID_SIZE; i++) {
+        const imageHTML = `<img src='${tilePath}${gameType}${i + 1}-${themeMode}.png' class="cell-image" alt="New Image">`
+        numberInputs[i].innerHTML += imageHTML
+    }
+}
+
 function clearSudoku() {
     for (let i = 0; i < Math.pow(CONSTANT.GRID_SIZE, 2); i++) {
         cells[i].innerHTML = ''
         cells[i].classList.remove('filled')
+        cells[i].classList.remove('fill-ans')
         cells[i].classList.remove('selected')
+        cells[i].classList.remove('hover')
+    }
+}
+
+function clearKeyboard() {
+    for (let i = 0; i < CONSTANT.GRID_SIZE; i++) {
+        numberInputs[i].innerHTML = ''
     }
 }
 
@@ -209,11 +236,13 @@ function returnStartScreen() {
     startScreen.classList.add('active')
     gameScreen.classList.remove('active')
     pauseScreen.classList.remove('active')
+    resultScreen.classList.remove('active')
     gameTimer.innerHTML = '00:00:00'
 }
 
+//to create the big border gaps
 function initGameGrid() {
-    //const cells = document.querySelectorAll('.main-grid-cell')
+    //to create the big border gaps
 
     for (let i = 0; i < Math.pow(CONSTANT.GRID_SIZE, 2); i++) {
         let row = Math.floor(i / CONSTANT.GRID_SIZE)
@@ -227,9 +256,10 @@ function initGameGrid() {
 function hoverBg(index) {
     let row = Math.floor(index / CONSTANT.GRID_SIZE)
     let col = index % CONSTANT.GRID_SIZE
-
+    console.log('index', index)
     let boxStartRow = row - row % 3
     let boxStartCol = col - col % 3
+
 
     for (let i = 0; i < CONSTANT.BOX_SIZE; i++) {
         for (let j = 0; j < CONSTANT.BOX_SIZE; j++) {
@@ -237,7 +267,7 @@ function hoverBg(index) {
             cell.classList.add('hover')
         }
     }
-    let step = CONSTANT.GRID_SIZE
+    let step = 9
     while (index - step >= 0) {
         cells[index - step].classList.add('hover')
         step += 9
@@ -268,15 +298,27 @@ function resetBg() {
 
 function initCellsEvent() {
     cells.forEach((e, index) => {
+
         e.addEventListener('click', () => {
+            clearCells()
             if (!e.classList.contains('filled')) {
                 cells.forEach(e => e.classList.remove('selected'))
 
                 selectedCell = index
+
                 e.classList.remove('err')
                 e.classList.add('selected')
                 resetBg()
                 hoverBg(index)
+            } else {
+                //console.log('cell value', cells[index].getAttribute('data-value'))
+                for (let i = 0; i < CONSTANT.GRID_SIZE * CONSTANT.GRID_SIZE; i++) {
+                    let selectedCellGrid = cells[index].getAttribute('data-value')
+                    let selectedNewCellGrid = cells[i].getAttribute('data-value')
+                    if (selectedCellGrid === selectedNewCellGrid) {
+                        cells[i].classList.add('hover')
+                    }
+                }
             }
         })
     })
@@ -287,9 +329,13 @@ function checkErr(value) {
         if (parseInt(cell.getAttribute('data-value')) === value) {
             cell.classList.add('err')
             cell.classList.add('cell-err')
+            cells[selectedCell].classList.add('err')
             setTimeout(() => {
                 cell.classList.remove('cell-err')
-            }, 500)
+            }, 1000)
+            setTimeout(() => {
+                cell.classList.remove('err')
+            }, 1500)
         }
     }
 
@@ -333,6 +379,10 @@ function checkErr(value) {
     }
 }
 
+function isErrCell(value) {
+    return cells[selectedCell].classList.contains(value)
+}
+
 function removeErr() {
     cells.forEach(e => e.classList.remove('err'))
 }
@@ -340,8 +390,11 @@ function removeErr() {
 function initNumberInputEvent() {
     numberInputs.forEach((e, index) => {
         e.addEventListener('click', () => {
+            const imageHTML = `<img src='${tilePath}${gameType}${index + 1}-${themeMode}.png' class="cell-image" alt="New Image">`
+
             if (!cells[selectedCell].classList.contains('filled')) {
-                cells[selectedCell].innerHTML = index + 1
+                cells[selectedCell].classList.add('fill-ans')
+                cells[selectedCell].innerHTML += imageHTML
                 cells[selectedCell].setAttribute('data-value', index + 1)
                 // add to answer
                 let row = Math.floor(selectedCell / CONSTANT.GRID_SIZE)
@@ -353,16 +406,24 @@ function initNumberInputEvent() {
                 removeErr()
                 checkErr(index + 1)
                 cells[selectedCell].classList.add('zoom-in')
-                setTimeout(() => {
+                if (isErrCell('err')) {
+                    setTimeout(() => {
+                        cells[selectedCell].classList.remove('zoom-in')
+                        cells[selectedCell].classList.remove('err')
+                        cells[selectedCell].setAttribute('data-value', 0)
+                        cells[selectedCell].innerHTML = ''
+                    }, 1000)
+                } else {
                     cells[selectedCell].classList.remove('zoom-in')
-                }, 500)
-
-                // check game win
-                if (isGameWin()) {
-                    removeGameInfo()
-                    showResult()
+                    // check game win
+                    if (isGameWin()) {
+                        removeGameInfo()
+                        showResult()
+                    }
+                    // ----
                 }
-                // ----
+
+
             }
         })
     })
@@ -383,7 +444,7 @@ function saveGameInfo() {
 
 function removeGameInfo() {
     localStorage.removeItem('game')
-    document.querySelector('#btn-continue').style.display = 'none'
+    btnContinue.style.display = 'none'
 }
 
 function isGameWin() {
@@ -394,6 +455,42 @@ function showResult() {
     clearInterval(timer)
     resultScreen.classList.add('active')
     resultTime.innerHTML = showTime(seconds)
+}
+
+function loadSudoku() {
+    let game = getGameInfo()
+
+    gameLevel.innerHTML = CONSTANT.LEVEL_NAME[game.level]
+
+    su = game.su
+
+    suAnswer = su.answer
+
+    seconds = game.seconds
+    gameTimer.innerHTML = showTime(seconds)
+
+    level_index = game.level
+
+    // show sudoku to div
+    for (let i = 0; i < Math.pow(CONSTANT.GRID_SIZE, 2); i++) {
+        let row = Math.floor(i / CONSTANT.GRID_SIZE)
+        let col = i % CONSTANT.GRID_SIZE
+
+        cells[i].setAttribute('data-value', su_answer[row][col])
+        cells[i].innerHTML = suAnswer[row][col] !== 0 ? suAnswer[row][col] : ''
+        if (su.question[row][col] !== 0) {
+            cells[i].classList.add('filled')
+        }
+    }
+}
+
+function clearCells() {
+    console.log('clearCells')
+    for (let i = 0; i < CONSTANT.GRID_SIZE * CONSTANT.GRID_SIZE; i++) {
+        cells[i].classList.remove('hover')
+        cells[i].classList.remove('selected')
+        cells[i].classList.remove('num-selected')
+    }
 }
 
 //---------------------------

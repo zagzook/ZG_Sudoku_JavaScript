@@ -24,10 +24,15 @@
             <img src="assets/images/logo.png" alt="" class="nav-img-logo">
         </a>
         <div class="nav-logo">Sudoku Games</div>
-        <div class="dark-mode-toggle" id="dark-mode-toggle">
-            <i class='bx bxs-sun'></i>
-            <i class='bx bxs-moon'></i>
+        <div class="icon-image">
+
+            <div class="dark-mode-toggle" id="dark-mode-toggle">
+                <i class='bx bxs-cog'></i>
+                <i class='bx bxs-sun'></i>
+                <i class='bx bxs-moon'></i>
+            </div>
         </div>
+
     </div>
 </nav>
 <!-- ens top nav -->
@@ -47,8 +52,89 @@
         <!--        end start screen-->
         <!--        game screen-->
         <div class="main-game " id="game-screen">
-            <div class="main-sudoku-grid ">
-
+            <div class="main-sudoku-grid" id="main-sudoku-grid">
+                <!-- 81 cells -->
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
+                <div class="main-grid-cell"></div>
             </div>
             <div class="main-game-info">
                 <div class="main-game-info-box main-game-info-name">
@@ -70,7 +156,16 @@
                 </div>
             </div>
             <div class="numbers">
-
+                <div class="number"></div>
+                <div class="number"></div>
+                <div class="number"></div>
+                <div class="number"></div>
+                <div class="number"></div>
+                <div class="number"></div>
+                <div class="number"></div>
+                <div class="number"></div>
+                <div class="number"></div>
+                <div class="delete" id="btn-delete">X</div>
             </div>
         </div>
         <!--        end game screen-->
@@ -80,12 +175,20 @@
             <div class="btn" id="btn-new-game">New Game</div>
         </div>
         <!--        end pause screen-->
-
+        <!-- result screen -->
+        <div class="result-screen" id="result-screen">
+            <div class="congrate">Competed</div>
+            <div class="info">Time</div>
+            <div id="result-time"></div>
+            <div class="btn" id="btn-new-game-2">New game</div>
+        </div>
+        <!-- end result screen -->
     </div>
 </div>
 <!--ens main-->
 
 <script src="assets/js/constant.js"></script>
+<script src="assets/js/boards/nineDigit.js"></script>
 <script src="assets/js/nineGridBoard.js"></script>
 <script src="assets/js/sudoku.js"></script>
 <script src="assets/js/app.js"></script>
